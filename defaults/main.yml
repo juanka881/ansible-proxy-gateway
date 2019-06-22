@@ -1,0 +1,9 @@
+proxy_gateway_config_dir: /etc/proxy_gateway
+proxy_gateway_domain: ""
+proxy_gateway_cert_path: ""
+proxy_gateway_key_path: ""
+# name: jenkins
+# domain: ci.example.com
+# upstream: jenkins.local
+# upstream_port = 80
+proxy_gateway_sites: []

@@ -1,0 +1,59 @@
+---
+- name: allow http in
+  ufw:
+    rule: allow
+    comment: "http in"
+    direction: in
+    proto: tcp
+    port: "80"
+
+- name: allow https in
+  ufw:
+    rule: allow
+    comment: "https in"
+    direction: in
+    proto: tcp
+    port: "443"
+
+- name: create config dir
+  file:
+    path: "{{ proxy_gateway_config_dir }}"
+    state: directory
+
+- name: create sites dir
+  file:
+    path: "{{ proxy_gateway_config_dir }}/sites"
+    state: directory
+
+- name: create sites configs
+  template:
+    src: "site.j2.conf"
+    dest: "{{ proxy_gateway_config_dir }}/sites/{{ item.name }}.conf"
+    mode: "0770"
+  with_items: "{{ proxy_gateway_sites }}"
+
+- name: allow upstream site port out
+  when: item.upstream_port is defined
+  ufw:
+    rule: allow
+    comment: "site {{ item.upstream_port }} out"
+    direction: out
+    proto: tcp
+    port: "{{ item.upstream_port }}"
+  with_items: "{{ proxy_gateway_sites }}"
+
+- name: copy docker compose file
+  template:
+    src: "docker-compose.j2.yml"
+    dest: "{{ proxy_gateway_config_dir }}/docker-compose.yml"
+    mode: 0770
+
+- name: start services
+  shell: "docker-compose up --no-start --remove-orphans"
+  args:
+    chdir: "{{ proxy_gateway_config_dir }}"
+
+- name: (re)start services
+  shell: "docker-compose restart"
+  args:
+    chdir: "{{ proxy_gateway_config_dir }}"

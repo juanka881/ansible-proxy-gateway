@@ -1,0 +1,16 @@
+version: "3"
+
+services:
+  proxy:
+    image: nginx:stable-alpine
+    restart: always
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes:
+      #- "/var/run/docker.sock:/tmp/docker.sock:ro"
+      - "{{ proxy_gateway_cert_path }}:/etc/nginx/certs/{{ proxy_gateway_domain }}.cer:ro"
+      - "{{ proxy_gateway_key_path }}:/etc/nginx/certs/{{ proxy_gateway_domain }}.key:ro"
+      {% for site in proxy_gateway_sites %}
+- "{{ proxy_gateway_config_dir }}/sites/{{ site.name }}.conf:/etc/nginx/conf.d/{{ site.name }}.conf:ro"
+      {% endfor %}
